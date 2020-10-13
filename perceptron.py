@@ -20,4 +20,6 @@ plt.plot([4, -4], [3, 5])
 
 plt.scatter(E[:,0], E[:,1], c=t)
 
+weights.np()
+
 plt.show()

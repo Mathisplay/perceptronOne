@@ -8,9 +8,8 @@ from PIL import Image as im
 #from tensorflow import keras
 #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 print("Generating random weights...")
-weights = np.round(np.random.rand(10, 7, 5), 4)
-weights.flatten()
-theta = np.round(np.random.rand(10), 4)
+weights = np.round(np.random.rand(10, 36), 4)
+weights = weights / 10.0
 #print(weights)
 print(np.sum(weights))
 #print(theta)
@@ -29,29 +28,48 @@ for i in range(len(splitText)):
     data = np.array(image.getdata())
     data = data.reshape((7, 5, 3))
     finalData[i] = data.copy()
-learningData = np.zeros((len(splitText), 7, 5), dtype='float32')
+learningData = np.zeros((len(splitText), 36), dtype='float32')
 correctAnswers = np.zeros(len(splitText), dtype='int')
 for i in range(len(finalData)):
     for j in range(7):
         for k in range(5):
-            learningData[i][j][k] = finalData[i][j][k][0].copy() / 255.0
+            learningData[i][j * 5 + k] = finalData[i][j][k][0].copy() / 255.0
     correctAnswers[i] = int(splitText[i][1])
-learningData.flatten()
+    learningData[i][-1] = 1
+print(learningData[0])
 #print(learningData)
 #print(correctAnswers)
-for z in range(10):
-    answers = np.full(10, -1)
+bestWeights = weights.copy()
+bestLifetime = 0
+learning = 0.003
+loops = 0
+while bestLifetime < 3:
+    loops += 1
+    if loops % 10000 == 0:
+        print(str(loops) + " " + str(bestLifetime))
+    lifetime = 0
     current = np.random.randint(len(splitText))
+    correctAns = correctAnswers[current]
     sum = np.zeros(10, dtype='float32')
     for i in range(10):
-        sum[i] = np.sum(np.multiply(learningData[current], weights[i]))
-        if sum[i] < theta[i]:
-            print("Is not a " + str(i))
+        T = 0
+        if i == correctAns:
+            T = 1
         else:
-            print("Is probably a " + str(i))
-            if i != correctAnswers[current]:
-                
-        print(sum[i])
+            T = -1
+        sum[i] = np.sum(np.multiply(learningData[current], weights[i]))
+        value = 0
+        if sum[i] < 0:
+            value = -1
+        else:
+            value = 1
+        if T - value != 0:
+            weights[i] = weights[i] + (learning * (T - value) * learningData[current])
+            lifetime = 0
+        else:
+            lifetime += 1
+            if lifetime > bestLifetime:
+                bestWeights = weights.copy()
 
 
 #fig = plt.figure(figsize=(4, 5))
