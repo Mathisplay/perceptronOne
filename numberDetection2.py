@@ -36,28 +36,22 @@ for i in range(len(finalData)):
             learningData[i][j * 5 + k] = finalData[i][j][k][0].copy() / 255.0
     correctAnswers[i] = int(splitText[i][1])
     learningData[i][-1] = 1
-#print(learningData)
-#print(correctAnswers)
+
 bestWeights = weights.copy()
 bestLifetime = 0
 learning = 0.001
-loops = 0
 lifetime = 0
 while bestLifetime <= 10000:
-    loops += 1
     bestDetection = -1
-#    if loops % 1 == 0:
-#        print(str(loops) + " " + str(bestLifetime))
+
     current = np.random.randint(len(splitText))
     correctAns = correctAnswers[current]
-#    print("Expected: " + str(correctAns) + "\nFound:")
     sum = np.zeros(10, dtype='float32')
     for i in range(10):
         sum[i] = np.sum(np.multiply(learningData[current], weights[i]))
     best = np.amax(sum)
     bestId = np.unravel_index(np.argmax(sum, axis=None), sum.shape)[0]
-#    print("\tGot: " + str(bestId))
-#    print(bestId)
+
     if bestId != correctAns:
         weights[bestId] = weights[bestId] + (learning * (-2.0) * learningData[current])
         weights[correctAns] = weights[correctAns] + (learning * (2.0) * learningData[current])
@@ -67,40 +61,6 @@ while bestLifetime <= 10000:
         if lifetime > bestLifetime:
             bestWeights = weights.copy()
             bestLifetime = lifetime
-#        T = 0
-#        if i == correctAns:
-#            T = 1
-#        else:
-#            T = -1
-#
-#        value = 0
-#        if sum[i] < 0:
-#            value = -1
-#        else:
-#            value = 1
-
-#        if T - value != 0:
-#            weights[i] = weights[i] + (learning * (T - value) * learningData[current])
-#            lifetime = 0
-#        else:
-#            if lifetime > bestLifetime:
-#                bestWeights = weights.copy()
-#                bestLifetime = lifetime
-#     lifetime += 1
-
-
-#fig = plt.figure(figsize=(4, 5))
-#for i in range(3):
-#    for j in range(10):
-#        fig.add_subplot(3, 10, i * 10 + j + 1).set_title(str(correctAnswers[i * 10 + j]))
-#        plt.xticks([])
-#        plt.yticks([])
-#        plt.grid(False)
-#        plt.imshow(learningData[i * 10 + j], cmap=plt.cm.binary)
-#plt.imshow(learningData[3, :, :])
-#plt.figure()
-#plt.imshow(x_train[2])
-#plt.show()
 print("Images analyzed")
 
 image = im.open('trainingData/test.png')
@@ -115,12 +75,14 @@ testCorrect = np.array([6])
 
 sum = np.zeros(10, dtype='float32')
 print("This drawing could be a:")
-#bestValue = -1000000
-#bestValueId = -1
 for i in range(10):
     sum[i] = np.sum(np.multiply(newData, bestWeights[i]))
-#    print(str(i) + ": " + str(sum[i]))
-#    if sum > bestValue:
-#        bestValue = sum
-#        bestValueId = i
 print(np.unravel_index(np.argmax(sum, axis=None), sum.shape)[0])
+
+plt.figure()
+plt.grid(False)
+plt.xticks([])
+plt.yticks([])
+showPic = newData[0:-1]
+plt.imshow(showPic.reshape(7, 5), cmap=plt.cm.binary)
+plt.show()
