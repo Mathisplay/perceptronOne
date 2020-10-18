@@ -8,8 +8,8 @@ from PIL import Image as im
 #from tensorflow import keras
 #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 print("Generating random weights...")
-weights = np.round(np.random.uniform(-1, 1, 360), 5).reshape(10, 36)
-weights = np.round(weights / 1000.0, 5)
+weights = np.round(np.random.uniform(-0.001, 0.001, 360), 3).reshape(10, 36)
+weights = np.round(weights / 1000.0, 3)
 #print(weights[0][0])
 #print(np.sum(weights))
 #print(theta)
@@ -40,10 +40,10 @@ for i in range(len(finalData)):
 #print(correctAnswers)
 bestWeights = weights.copy()
 bestLifetime = 0
-learning = 0.00001
+learning = 0.001
 loops = 0
-lifetime = 1
-while bestLifetime <= 20:
+lifetime = 0
+while bestLifetime <= 10000:
     loops += 1
     bestDetection = -1
 #    if loops % 1 == 0:
@@ -54,27 +54,39 @@ while bestLifetime <= 20:
     sum = np.zeros(10, dtype='float32')
     for i in range(10):
         sum[i] = np.sum(np.multiply(learningData[current], weights[i]))
-        T = 0
-        if i == correctAns:
-            T = 1
-        else:
-            T = -1
+    best = np.amax(sum)
+    bestId = np.unravel_index(np.argmax(sum, axis=None), sum.shape)[0]
+#    print("\tGot: " + str(bestId))
+#    print(bestId)
+    if bestId != correctAns:
+        weights[bestId] = weights[bestId] + (learning * (-2.0) * learningData[current])
+        weights[correctAns] = weights[correctAns] + (learning * (2.0) * learningData[current])
+        lifetime = 0
+    else:
+        lifetime += 1
+        if lifetime > bestLifetime:
+            bestWeights = weights.copy()
+            bestLifetime = lifetime
+#        T = 0
+#        if i == correctAns:
+#            T = 1
+#        else:
+#            T = -1
+#
+#        value = 0
+#        if sum[i] < 0:
+#            value = -1
+#        else:
+#            value = 1
 
-        value = 0
-        if sum[i] < 0:
-            value = -1
-        else:
-            value = 1
-#            print("\t" + str(i))
-
-        if T - value != 0:
-            weights[i] = weights[i] + (learning * (T - value) * learningData[current])
-            lifetime = 0
-        else:
-            if lifetime > bestLifetime:
-                bestWeights = weights.copy()
-                bestLifetime = lifetime
-    lifetime += 1
+#        if T - value != 0:
+#            weights[i] = weights[i] + (learning * (T - value) * learningData[current])
+#            lifetime = 0
+#        else:
+#            if lifetime > bestLifetime:
+#                bestWeights = weights.copy()
+#                bestLifetime = lifetime
+#     lifetime += 1
 
 
 #fig = plt.figure(figsize=(4, 5))
@@ -106,9 +118,9 @@ print("This drawing could be a:")
 #bestValue = -1000000
 #bestValueId = -1
 for i in range(10):
-    sum = np.sum(np.multiply(learningData[current], bestWeights[i]))
+    sum[i] = np.sum(np.multiply(newData, bestWeights[i]))
+#    print(str(i) + ": " + str(sum[i]))
 #    if sum > bestValue:
 #        bestValue = sum
 #        bestValueId = i
-    if sum >= 0:
-        print(i)
+print(np.unravel_index(np.argmax(sum, axis=None), sum.shape)[0])
