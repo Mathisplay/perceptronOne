@@ -8,10 +8,10 @@ from PIL import Image as im
 #from tensorflow import keras
 #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 print("Generating random weights...")
-weights = np.round(np.random.rand(10, 36), 4)
-weights = weights / 10.0
-#print(weights)
-print(np.sum(weights))
+weights = np.round(np.random.uniform(-1, 1, 360), 5).reshape(10, 36)
+weights = np.round(weights / 1000.0, 5)
+#print(weights[0][0])
+#print(np.sum(weights))
 #print(theta)
 print("Searching for data...")
 with open("trainingData/data.txt", "r") as f:
@@ -36,40 +36,45 @@ for i in range(len(finalData)):
             learningData[i][j * 5 + k] = finalData[i][j][k][0].copy() / 255.0
     correctAnswers[i] = int(splitText[i][1])
     learningData[i][-1] = 1
-print(learningData[0])
 #print(learningData)
 #print(correctAnswers)
 bestWeights = weights.copy()
 bestLifetime = 0
-learning = 0.003
+learning = 0.00001
 loops = 0
-while bestLifetime < 3:
+lifetime = 1
+while bestLifetime <= 20:
     loops += 1
-    if loops % 10000 == 0:
-        print(str(loops) + " " + str(bestLifetime))
-    lifetime = 0
+    bestDetection = -1
+#    if loops % 1 == 0:
+#        print(str(loops) + " " + str(bestLifetime))
     current = np.random.randint(len(splitText))
     correctAns = correctAnswers[current]
+#    print("Expected: " + str(correctAns) + "\nFound:")
     sum = np.zeros(10, dtype='float32')
     for i in range(10):
+        sum[i] = np.sum(np.multiply(learningData[current], weights[i]))
         T = 0
         if i == correctAns:
             T = 1
         else:
             T = -1
-        sum[i] = np.sum(np.multiply(learningData[current], weights[i]))
+
         value = 0
         if sum[i] < 0:
             value = -1
         else:
             value = 1
+#            print("\t" + str(i))
+
         if T - value != 0:
             weights[i] = weights[i] + (learning * (T - value) * learningData[current])
             lifetime = 0
         else:
-            lifetime += 1
             if lifetime > bestLifetime:
                 bestWeights = weights.copy()
+                bestLifetime = lifetime
+    lifetime += 1
 
 
 #fig = plt.figure(figsize=(4, 5))
@@ -89,9 +94,21 @@ print("Images analyzed")
 image = im.open('trainingData/test.png')
 data = np.array(image.getdata())
 data = data.reshape((7, 5, 3))
-newData = np.zeros((1, 7, 5), dtype='float32')
+newData = np.zeros((36), dtype='float32')
 for i in range(7):
     for j in range(5):
-        newData[0][i][j] = data[i][j][0].copy() / 255.0
-
+        newData[i * 5 + j] = data[i][j][0].copy() / 255.0
+newData[-1] = 1
 testCorrect = np.array([6])
+
+sum = np.zeros(10, dtype='float32')
+print("This drawing could be a:")
+#bestValue = -1000000
+#bestValueId = -1
+for i in range(10):
+    sum = np.sum(np.multiply(learningData[current], bestWeights[i]))
+#    if sum > bestValue:
+#        bestValue = sum
+#        bestValueId = i
+    if sum >= 0:
+        print(i)
