@@ -18,9 +18,9 @@ with open("trainingData/data.txt", "r") as f:
     splitText = np.zeros((len(text), 2), dtype=object)
     for i in range(len(text)):
         splitText[i] = text[i].rstrip().split(" ")
+print("Analyzing images...")
 learningData = np.zeros((len(splitText), 36), dtype='float32')
 correctAnswers = np.zeros(len(splitText), dtype='int')
-print("Analyzing images...")
 for i in range(len(splitText)):
     image = im.open('trainingData/' + splitText[i][0])
     learningData[i] = np.r_[np.array(image.getdata()).flatten()[0::3] / 255.0, 1]
