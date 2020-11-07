@@ -9,10 +9,7 @@ from PIL import Image as im
 #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 print("Generating random weights...")
 weights = np.round(np.random.uniform(-0.001, 0.001, 360), 3).reshape(10, 36)
-weights = np.round(weights / 1000.0, 3)
-#print(weights[0][0])
-#print(np.sum(weights))
-#print(theta)
+
 print("Searching for data...")
 with open("trainingData/data.txt", "r") as f:
     print("Data found")
